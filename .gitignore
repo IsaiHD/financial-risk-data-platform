@@ -1,0 +1,33 @@
+# Secrets — NUNCA subir
+.env
+*.env
+keys/
+**/airflow-sa-key.json
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/.terraform.lock.hcl
+terraform/terraform.tfvars
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Datos locales — son grandes y no van al repo
+data/raw/
+data/processed/
+
+# VS Code
+.vscode/
+
+# Airflow logs
+airflow/logs/
+
+# Docker
+airflow/postgres-db-volume/
