@@ -1,6 +1,7 @@
 import os
 import json
 import sys
+from google.cloud import storage
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -60,8 +61,30 @@ def extraer_instituciones_task(**kwargs):
 def extraer_balances(**kwargs):
     print("⏳ Pendiente: Aquí usaremos extractor.get_balance_banco()")
 
-def subir_a_gcs(**kwargs):
-    print("⏳ Pendiente: Aquí subiremos el archivo /tmp/instituciones_2024_01.json al Data Lake Bronze")
+def subir_a_gcs_task(**kwargs):
+    print("☁️ Iniciando conexión con Google Cloud Storage...")
+    
+    # 1. Recuperamos el nombre de tu bucket desde el docker-compose
+    bucket_name = os.getenv("GCS_BUCKET_NAME")
+    if not bucket_name:
+        raise ValueError("❌ No se encontró GCS_BUCKET_NAME en las variables de entorno.")
+
+    # 2. Definimos las rutas
+    ruta_local = '/tmp/instituciones_2024_01.json'
+    # Esta es la ruta (carpeta) que se creará automáticamente dentro de tu bucket Bronze
+    ruta_gcs = 'cmf/instituciones/2024/01/instituciones.json'
+
+    # 3. Nos conectamos a GCP usando las credenciales automáticas
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(ruta_gcs)
+
+    # 4. Subimos el archivo
+    print(f"🚀 Subiendo archivo a gs://{bucket_name}/{ruta_gcs} ...")
+    blob.upload_from_filename(ruta_local)
+    
+    print("✅ Archivo subido exitosamente a la capa Bronze en GCS.")
+    return f"gs://{bucket_name}/{ruta_gcs}"
 
 def cargar_bigquery(**kwargs):
     print("⏳ Pendiente: Aquí moveremos los datos a tu dataset financial_risk_raw")
@@ -81,7 +104,7 @@ tarea_2 = PythonOperator(
 
 tarea_3 = PythonOperator(
     task_id='subir_a_gcs',
-    python_callable=subir_a_gcs,
+    python_callable=subir_a_gcs_task, # <-- Cambio aquí
     dag=dag,
 )
 

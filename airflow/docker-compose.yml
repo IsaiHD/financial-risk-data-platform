@@ -15,6 +15,7 @@ x-airflow-common: &airflow-common
     GCP_PROJECT_ID: ${GCP_PROJECT_ID}
     GCS_BUCKET_NAME: ${GCS_BUCKET_NAME}
     GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/keys/airflow-sa-key.json
+    _PIP_ADDITIONAL_REQUIREMENTS: "google-cloud-storage"
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
