@@ -57,7 +57,8 @@ def _load_gcs_loader():
 def extraer_instituciones(**context):
     CMFExtractor = _load_cmf_extractor()
 
-    fecha = context["execution_date"]
+    from dateutil.relativedelta import relativedelta
+    fecha = context["execution_date"] - relativedelta(months=2)
     anho  = fecha.year
     mes   = fecha.month
 
