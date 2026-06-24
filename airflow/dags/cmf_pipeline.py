@@ -163,7 +163,6 @@ def cargar_bigquery(**context):
         cuentas = payload.get("data", {}).get("CodigosBalances", [])
         if isinstance(cuentas, dict):
             cuentas = [cuentas]
-
         for cuenta in cuentas:
             if not isinstance(cuenta, dict):
                 continue
