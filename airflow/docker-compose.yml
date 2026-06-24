@@ -10,15 +10,14 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
-    # Variables del proyecto
     CMF_API_KEY: ${CMF_API_KEY}
     GCP_PROJECT_ID: ${GCP_PROJECT_ID}
     GCS_BUCKET_NAME: ${GCS_BUCKET_NAME}
     GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/keys/airflow-sa-key.json
-    _PIP_ADDITIONAL_REQUIREMENTS: "google-cloud-storage"
+    _PIP_ADDITIONAL_REQUIREMENTS: "google-cloud-storage google-cloud-bigquery"
   volumes:
     - ./dags:/opt/airflow/dags
-    - ./logs:/opt/airflow/logs
+    - airflow-logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ../keys:/opt/airflow/keys
     - ../src:/opt/airflow/src
@@ -29,7 +28,6 @@ x-airflow-common: &airflow-common
       condition: service_healthy
 
 services:
-  # Base de datos para Airflow
   postgres:
     image: postgres:13
     environment:
@@ -45,7 +43,6 @@ services:
       start_period: 5s
     restart: always
 
-  # Servidor web de Airflow (UI)
   airflow-webserver:
     <<: *airflow-common
     command: webserver
@@ -63,7 +60,6 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-  # Scheduler de Airflow (ejecuta los DAGs)
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
@@ -79,7 +75,6 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-  # Inicialización de Airflow
   airflow-init:
     <<: *airflow-common
     entrypoint: /bin/bash
@@ -103,3 +98,4 @@ services:
 
 volumes:
   postgres-db-volume:
+  airflow-logs:
