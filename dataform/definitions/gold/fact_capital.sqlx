@@ -1,0 +1,51 @@
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.goldSchema,
+  description: "Hechos financieros agregados para indicadores de capital y solvencia.",
+  columns: {
+    codigo_institucion: "Codigo SBIF/CMF de la institucion financiera.",
+    periodo: "Primer dia del mes informado.",
+    anho: "Anho calendario.",
+    mes: "Mes calendario.",
+    total_activos: "Total activos, cuenta CMF 100000000.",
+    total_pasivos: "Total pasivos, cuenta CMF 200000000.",
+    patrimonio: "Patrimonio, cuenta CMF 300000000.",
+    ratio_solvencia: "Patrimonio sobre total activos.",
+    ratio_endeudamiento: "Total pasivos sobre total activos.",
+    multiplicador_capital: "Total activos sobre patrimonio."
+  },
+  bigquery: {
+    partitionBy: "periodo",
+    clusterBy: ["codigo_institucion"]
+  },
+  assertions: {
+    nonNull: ["codigo_institucion", "periodo"],
+    uniqueKey: ["codigo_institucion", "anho", "mes"]
+  }
+}
+
+WITH pivoted AS (
+  SELECT
+    codigo_institucion,
+    periodo,
+    anho,
+    mes,
+    SUM(IF(codigo_cuenta = "100000000", monto_total, 0)) AS total_activos,
+    SUM(IF(codigo_cuenta = "200000000", monto_total, 0)) AS total_pasivos,
+    SUM(IF(codigo_cuenta = "300000000", monto_total, 0)) AS patrimonio
+  FROM ${ref("fact_balance")}
+  GROUP BY codigo_institucion, periodo, anho, mes
+)
+
+SELECT
+  codigo_institucion,
+  periodo,
+  anho,
+  mes,
+  total_activos,
+  total_pasivos,
+  patrimonio,
+  SAFE_DIVIDE(patrimonio, total_activos) AS ratio_solvencia,
+  SAFE_DIVIDE(total_pasivos, total_activos) AS ratio_endeudamiento,
+  SAFE_DIVIDE(total_activos, patrimonio) AS multiplicador_capital
+FROM pivoted

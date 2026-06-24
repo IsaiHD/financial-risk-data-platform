@@ -1,0 +1,23 @@
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.goldSchema,
+  description: "Dimension de instituciones bancarias reportadas por CMF.",
+  columns: {
+    codigo_institucion: "Codigo SBIF/CMF de la institucion financiera.",
+    nombre_banco: "Nombre de la institucion financiera.",
+    tipo_institucion: "Tipo de institucion para reporting.",
+    es_sistema: "Indica si el registro representa el sistema bancario completo."
+  },
+  assertions: {
+    nonNull: ["codigo_institucion", "nombre_banco"],
+    uniqueKey: ["codigo_institucion"]
+  }
+}
+
+SELECT
+  codigo_institucion,
+  COALESCE(ANY_VALUE(nombre_institucion), "Sin nombre") AS nombre_banco,
+  IF(codigo_institucion = "999", "Sistema", "Banco") AS tipo_institucion,
+  codigo_institucion = "999" AS es_sistema
+FROM ${ref("silver_balance")}
+GROUP BY codigo_institucion

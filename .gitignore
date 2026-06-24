@@ -1,8 +1,8 @@
-# Secrets — NUNCA subir
+# Secrets - NUNCA subir
 .env
-*.env
 keys/
 **/airflow-sa-key.json
+dataform/.df-credentials.json
 
 # Terraform
 terraform/.terraform/
@@ -19,7 +19,7 @@ __pycache__/
 venv/
 *.egg-info/
 
-# Datos locales — son grandes y no van al repo
+# Datos locales
 data/raw/
 data/processed/
 
@@ -28,6 +28,10 @@ data/processed/
 
 # Airflow logs
 airflow/logs/
+airflow/dags/__pycache__/
 
 # Docker
 airflow/postgres-db-volume/
+
+# Dataform
+dataform/node_modules/

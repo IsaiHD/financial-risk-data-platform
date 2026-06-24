@@ -1,0 +1,27 @@
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.goldSchema,
+  description: "Dimension de cuentas contables CMF.",
+  columns: {
+    codigo_cuenta: "Codigo contable CMF.",
+    descripcion_cuenta: "Descripcion de la cuenta contable.",
+    categoria_cuenta: "Categoria simple derivada desde el codigo contable."
+  },
+  assertions: {
+    nonNull: ["codigo_cuenta"],
+    uniqueKey: ["codigo_cuenta"]
+  }
+}
+
+SELECT
+  codigo_cuenta,
+  COALESCE(ANY_VALUE(descripcion_cuenta), "Sin descripcion") AS descripcion_cuenta,
+  CASE
+    WHEN STARTS_WITH(codigo_cuenta, "1") THEN "Activo"
+    WHEN STARTS_WITH(codigo_cuenta, "2") THEN "Pasivo"
+    WHEN STARTS_WITH(codigo_cuenta, "3") THEN "Patrimonio"
+    WHEN STARTS_WITH(codigo_cuenta, "4") THEN "Resultado"
+    ELSE "Otra"
+  END AS categoria_cuenta
+FROM ${ref("silver_balance")}
+GROUP BY codigo_cuenta

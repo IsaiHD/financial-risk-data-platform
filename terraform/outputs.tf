@@ -23,12 +23,18 @@ output "dataset_gold" {
   value       = google_bigquery_dataset.gold.dataset_id
 }
 
+output "dataset_assertions" {
+  description = "Dataset BigQuery Assertions"
+  value       = google_bigquery_dataset.assertions.dataset_id
+}
+
 output "service_account_airflow" {
   description = "Email del Service Account de Airflow"
   value       = google_service_account.airflow.email
 }
 
 output "key_file_path" {
-  description = "Ruta del archivo de credenciales para Airflow"
-  value       = local_file.airflow_key_file.filename
+  description = "Ruta del archivo de credenciales para Airflow si fue creado"
+  value       = var.create_airflow_key ? local_file.airflow_key_file[0].filename : null
+  sensitive   = true
 }

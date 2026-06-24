@@ -1,0 +1,52 @@
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.goldSchema,
+  description: "Tabla denormalizada para dashboards de capital y solvencia en Looker Studio.",
+  columns: {
+    codigo_institucion: "Codigo SBIF/CMF de la institucion financiera.",
+    nombre_banco: "Nombre de la institucion financiera.",
+    tipo_institucion: "Tipo de institucion para reporting.",
+    es_sistema: "Indica si el registro representa el sistema bancario completo.",
+    periodo: "Primer dia del mes informado.",
+    anho: "Anho calendario.",
+    mes: "Mes calendario.",
+    trimestre: "Trimestre calendario.",
+    periodo_yyyy_mm: "Periodo en formato YYYY-MM.",
+    total_activos: "Total activos, cuenta CMF 100000000.",
+    total_pasivos: "Total pasivos, cuenta CMF 200000000.",
+    patrimonio: "Patrimonio, cuenta CMF 300000000.",
+    ratio_solvencia: "Patrimonio sobre total activos.",
+    ratio_endeudamiento: "Total pasivos sobre total activos.",
+    multiplicador_capital: "Total activos sobre patrimonio."
+  },
+  bigquery: {
+    partitionBy: "periodo",
+    clusterBy: ["codigo_institucion", "nombre_banco"]
+  },
+  assertions: {
+    nonNull: ["codigo_institucion", "nombre_banco", "periodo"],
+    uniqueKey: ["codigo_institucion", "anho", "mes"]
+  }
+}
+
+SELECT
+  capital.codigo_institucion,
+  banco.nombre_banco,
+  banco.tipo_institucion,
+  banco.es_sistema,
+  capital.periodo,
+  capital.anho,
+  capital.mes,
+  tiempo.trimestre,
+  tiempo.periodo_yyyy_mm,
+  capital.total_activos,
+  capital.total_pasivos,
+  capital.patrimonio,
+  capital.ratio_solvencia,
+  capital.ratio_endeudamiento,
+  capital.multiplicador_capital
+FROM ${ref("fact_capital")} AS capital
+LEFT JOIN ${ref("dim_banco")} AS banco
+  ON capital.codigo_institucion = banco.codigo_institucion
+LEFT JOIN ${ref("dim_tiempo")} AS tiempo
+  ON capital.periodo = tiempo.periodo

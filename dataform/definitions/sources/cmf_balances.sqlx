@@ -1,0 +1,7 @@
+config {
+  type: "declaration",
+  database: dataform.projectConfig.defaultProject,
+  schema: dataform.projectConfig.vars.rawSchema,
+  name: "cmf_balances",
+  description: "Tabla Raw con balances mensuales cargados desde la API CMF."
+}

@@ -1,0 +1,24 @@
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.goldSchema,
+  description: "Dimension calendario para periodos mensuales CMF.",
+  columns: {
+    periodo: "Primer dia del mes informado.",
+    anho: "Anho calendario.",
+    mes: "Mes calendario.",
+    trimestre: "Trimestre calendario.",
+    periodo_yyyy_mm: "Periodo en formato YYYY-MM."
+  },
+  assertions: {
+    nonNull: ["periodo", "anho", "mes"],
+    uniqueKey: ["periodo"]
+  }
+}
+
+SELECT DISTINCT
+  periodo,
+  anho,
+  mes,
+  trimestre,
+  FORMAT_DATE("%Y-%m", periodo) AS periodo_yyyy_mm
+FROM ${ref("silver_balance")}

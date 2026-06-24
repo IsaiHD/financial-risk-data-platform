@@ -1,0 +1,9 @@
+defaultProject: "tu-proyecto-gcp"
+defaultDataset: "financial_risk_gold"
+defaultLocation: "US"
+defaultAssertionDataset: "financial_risk_assertions"
+dataformCoreVersion: "3.0.0"
+vars:
+  rawSchema: "financial_risk_raw"
+  silverSchema: "financial_risk_silver"
+  goldSchema: "financial_risk_gold"

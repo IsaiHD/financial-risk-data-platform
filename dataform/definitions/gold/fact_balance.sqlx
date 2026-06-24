@@ -1,0 +1,38 @@
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.goldSchema,
+  description: "Tabla de hechos con montos de balance por banco, cuenta y periodo.",
+  columns: {
+    codigo_institucion: "Codigo SBIF/CMF de la institucion financiera.",
+    codigo_cuenta: "Codigo contable CMF.",
+    periodo: "Primer dia del mes informado.",
+    anho: "Anho calendario.",
+    mes: "Mes calendario.",
+    monto_clp: "Monto en moneda chilena no reajustable.",
+    monto_reaj_ipc: "Monto en moneda reajustable por IPC.",
+    monto_reaj_tc: "Monto en moneda reajustable por tipo de cambio.",
+    monto_extranjero: "Monto en moneda extranjera.",
+    monto_total: "Monto total informado por CMF."
+  },
+  bigquery: {
+    partitionBy: "periodo",
+    clusterBy: ["codigo_institucion", "codigo_cuenta"]
+  },
+  assertions: {
+    nonNull: ["codigo_institucion", "codigo_cuenta", "periodo"],
+    uniqueKey: ["codigo_institucion", "codigo_cuenta", "anho", "mes"]
+  }
+}
+
+SELECT
+  codigo_institucion,
+  codigo_cuenta,
+  periodo,
+  anho,
+  mes,
+  monto_clp,
+  monto_reaj_ipc,
+  monto_reaj_tc,
+  monto_extranjero,
+  monto_total
+FROM ${ref("silver_balance")}

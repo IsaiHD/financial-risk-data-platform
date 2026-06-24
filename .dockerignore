@@ -1,0 +1,15 @@
+.git
+.venv
+__pycache__
+*.pyc
+
+.env
+*.tfstate
+*.tfstate.backup
+keys/
+airflow/logs/
+airflow/postgres-db-volume/
+data/raw/
+data/processed/
+dataform/.df-credentials.json
+dataform/node_modules/

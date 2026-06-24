@@ -1,0 +1,81 @@
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.silverSchema,
+  description: "Balance CMF normalizado, tipado y deduplicado por banco, cuenta y periodo.",
+  columns: {
+    codigo_cuenta: "Codigo contable CMF.",
+    descripcion_cuenta: "Descripcion de la cuenta contable CMF.",
+    codigo_institucion: "Codigo SBIF/CMF de la institucion financiera.",
+    nombre_institucion: "Nombre de la institucion financiera.",
+    anho: "Anho del periodo informado.",
+    mes: "Mes del periodo informado.",
+    periodo: "Primer dia del mes informado.",
+    trimestre: "Trimestre calendario del periodo.",
+    monto_clp: "Monto en moneda chilena no reajustable.",
+    monto_reaj_ipc: "Monto en moneda reajustable por IPC.",
+    monto_reaj_tc: "Monto en moneda reajustable por tipo de cambio.",
+    monto_extranjero: "Monto en moneda extranjera.",
+    monto_total: "Monto total informado por CMF.",
+    ingested_at: "Timestamp de carga en raw."
+  },
+  bigquery: {
+    partitionBy: "periodo",
+    clusterBy: ["codigo_institucion", "codigo_cuenta"]
+  },
+  assertions: {
+    nonNull: ["codigo_cuenta", "codigo_institucion", "anho", "mes", "periodo"],
+    uniqueKey: ["codigo_cuenta", "codigo_institucion", "anho", "mes"],
+    rowConditions: [
+      "mes between 1 and 12",
+      "monto_total is not null"
+    ]
+  }
+}
+
+WITH raw AS (
+  SELECT
+    CAST(NULLIF(TRIM(codigo_cuenta), "") AS STRING) AS codigo_cuenta,
+    NULLIF(TRIM(descripcion_cuenta), "") AS descripcion_cuenta,
+    CAST(NULLIF(TRIM(codigo_institucion), "") AS STRING) AS codigo_institucion,
+    NULLIF(TRIM(nombre_institucion), "") AS nombre_institucion,
+    SAFE_CAST(anho AS INT64) AS anho,
+    SAFE_CAST(mes AS INT64) AS mes,
+    SAFE_CAST(monto_clp AS NUMERIC) AS monto_clp,
+    SAFE_CAST(monto_reaj_ipc AS NUMERIC) AS monto_reaj_ipc,
+    SAFE_CAST(monto_reaj_tc AS NUMERIC) AS monto_reaj_tc,
+    SAFE_CAST(monto_extranjero AS NUMERIC) AS monto_extranjero,
+    SAFE_CAST(monto_total AS NUMERIC) AS monto_total,
+    SAFE_CAST(ingested_at AS TIMESTAMP) AS ingested_at
+  FROM ${ref("cmf_balances")}
+),
+
+typed AS (
+  SELECT
+    codigo_cuenta,
+    descripcion_cuenta,
+    codigo_institucion,
+    nombre_institucion,
+    anho,
+    mes,
+    DATE(anho, mes, 1) AS periodo,
+    CAST(CEIL(mes / 3.0) AS INT64) AS trimestre,
+    monto_clp,
+    monto_reaj_ipc,
+    monto_reaj_tc,
+    monto_extranjero,
+    monto_total,
+    ingested_at
+  FROM raw
+  WHERE codigo_cuenta IS NOT NULL
+    AND codigo_institucion IS NOT NULL
+    AND anho IS NOT NULL
+    AND mes BETWEEN 1 AND 12
+)
+
+SELECT
+  *
+FROM typed
+QUALIFY ROW_NUMBER() OVER (
+  PARTITION BY codigo_cuenta, codigo_institucion, anho, mes
+  ORDER BY ingested_at DESC
+) = 1
