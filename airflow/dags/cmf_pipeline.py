@@ -238,6 +238,7 @@ with DAG(
     default_args=default_args,
     schedule_interval=AIRFLOW_DAG_SCHEDULE,
     catchup=AIRFLOW_DAG_CATCHUP,
+    max_active_runs=1,
     tags=["cmf", "financial-risk", "bronze", "raw"],
 ) as dag:
     t1 = PythonOperator(

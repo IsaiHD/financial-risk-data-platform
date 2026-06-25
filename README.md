@@ -12,6 +12,32 @@ El objetivo de este proyecto es demostrar habilidades practicas para un primer r
 - **Stack:** Python, Apache Airflow, Docker, Google Cloud Storage, BigQuery, Dataform, SQL y Terraform.
 - **Enfoque:** proyecto pensado como demostracion end-to-end de una plataforma de datos moderna, no solo scripts aislados.
 
+## Demo Visual
+
+### Airflow DAG
+
+Ejecucion completa del pipeline `cmf_pipeline`, desde la extraccion de instituciones hasta la ejecucion de transformaciones Dataform.
+
+![Airflow DAG ejecutado correctamente](docs/screenshots/airflow-dag-success.png)
+
+### BigQuery Gold Mart
+
+Vista previa de la tabla final `mart_capital_dashboard`, generada en la capa Gold y lista para analisis o conexion con Looker Studio.
+
+![Vista previa de la tabla Gold en BigQuery](docs/screenshots/bigquery-gold-preview.png)
+
+### Dataform Transformations
+
+Ejecucion exitosa de Dataform desde Airflow, incluyendo creacion de tablas Gold y validaciones con assertions.
+
+![Ejecucion exitosa de Dataform desde Airflow](docs/screenshots/dataform-run-success.png)
+
+### Looker Studio Dashboard
+
+Dashboard final para monitorear activos, pasivos, patrimonio, solvencia y endeudamiento por banco y periodo.
+
+![Dashboard de riesgo financiero en Looker Studio](docs/screenshots/looker-dashboard.png)
+
 ## Que Demuestra Este Proyecto
 
 - Consumo de APIs externas con manejo de errores, reintentos y proteccion de credenciales.
