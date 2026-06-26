@@ -13,6 +13,7 @@ terraform/terraform.tfvars
 
 # Python
 __pycache__/
+.pytest_cache/
 *.pyc
 *.pyo
 .venv/
