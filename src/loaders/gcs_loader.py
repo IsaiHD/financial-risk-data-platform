@@ -6,7 +6,7 @@ Sube datos crudos extraidos de la API CMF a Google Cloud Storage.
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from google.cloud import storage
 
@@ -41,7 +41,7 @@ class GCSLoader:
         payload = {
             "_metadata": {
                 "source": "cmf_api_v3",
-                "extracted_at": datetime.utcnow().isoformat(),
+                "extracted_at": datetime.now(timezone.utc).isoformat(),
                 "dataset": dataset,
                 "codigo_banco": codigo_banco,
                 "anho": anho,

@@ -65,14 +65,19 @@ Estos indicadores permiten construir una vista comparativa por banco y periodo, 
 
 ## Arquitectura
 
-```text
-CMF API
-  -> Airflow
-  -> GCS Bronze
-  -> BigQuery Raw
-  -> Dataform Silver
-  -> Dataform Gold
-  -> Looker Studio / BI
+```mermaid
+flowchart LR
+    cmf["CMF API<br/>Balances bancarios"] --> airflow["Airflow DAG<br/>cmf_pipeline"]
+    airflow --> gcs["GCS Bronze<br/>JSON crudo por year/month"]
+    gcs --> raw["BigQuery Raw<br/>cmf_balances"]
+    raw --> silver["Dataform Silver<br/>silver_balance"]
+    silver --> gold["Dataform Gold<br/>dims, facts y mart"]
+    gold --> looker["Looker Studio / BI<br/>mart_capital_dashboard"]
+
+    terraform["Terraform<br/>GCS, BigQuery, IAM"] -. aprovisiona .-> gcs
+    terraform -. aprovisiona .-> raw
+    terraform -. aprovisiona .-> silver
+    terraform -. aprovisiona .-> gold
 ```
 
 Capas de datos:
@@ -105,6 +110,79 @@ Tablas principales generadas por Dataform:
 - `financial_risk_gold.fact_balance`
 - `financial_risk_gold.fact_capital`
 - `financial_risk_gold.mart_capital_dashboard`
+
+```mermaid
+erDiagram
+  DIM_BANCO ||--o{ FACT_BALANCE : clasifica
+  DIM_CUENTA ||--o{ FACT_BALANCE : describe
+  DIM_TIEMPO ||--o{ FACT_BALANCE : calendariza
+  FACT_BALANCE ||--o{ FACT_CAPITAL : agrega
+  DIM_BANCO ||--o{ FACT_CAPITAL : clasifica
+  DIM_TIEMPO ||--o{ FACT_CAPITAL : calendariza
+  FACT_CAPITAL ||--|| MART_CAPITAL_DASHBOARD : alimenta
+  DIM_BANCO ||--o{ MART_CAPITAL_DASHBOARD : enriquece
+  DIM_TIEMPO ||--o{ MART_CAPITAL_DASHBOARD : enriquece
+
+  DIM_BANCO {
+    string codigo_institucion PK
+    string nombre_banco
+    string tipo_institucion
+    boolean es_sistema
+  }
+
+  DIM_CUENTA {
+    string codigo_cuenta PK
+    string descripcion_cuenta
+    string categoria_cuenta
+  }
+
+  DIM_TIEMPO {
+    date periodo PK
+    int anho
+    int mes
+    int trimestre
+    string periodo_yyyy_mm
+  }
+
+  FACT_BALANCE {
+    string codigo_institucion FK
+    string codigo_cuenta FK
+    date periodo FK
+    int anho
+    int mes
+    numeric monto_total
+  }
+
+  FACT_CAPITAL {
+    string codigo_institucion FK
+    date periodo FK
+    int anho
+    int mes
+    numeric total_activos
+    numeric total_pasivos
+    numeric patrimonio
+    numeric ratio_solvencia
+    numeric ratio_endeudamiento
+    numeric multiplicador_capital
+  }
+
+  MART_CAPITAL_DASHBOARD {
+    string codigo_institucion FK
+    string nombre_banco
+    date periodo FK
+    numeric total_activos
+    numeric total_pasivos
+    numeric patrimonio
+    numeric ratio_solvencia
+    numeric ratio_endeudamiento
+  }
+```
+
+Grano de las tablas principales:
+
+- `fact_balance`: una fila por banco, cuenta contable y periodo mensual.
+- `fact_capital`: una fila por banco y periodo mensual, agregando activos, pasivos y patrimonio.
+- `mart_capital_dashboard`: tabla denormalizada por banco y periodo mensual para consumo directo en BI.
 
 La tabla recomendada para conectar a Looker Studio es:
 
