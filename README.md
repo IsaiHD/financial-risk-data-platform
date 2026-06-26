@@ -201,6 +201,8 @@ La tabla recomendada para conectar a Looker Studio es:
 |   |-- extractors/          # Cliente para API CMF
 |   `-- loaders/             # Carga de JSON hacia GCS
 |-- terraform/               # Infraestructura GCP como codigo
+|-- Makefile                 # Comandos frecuentes de desarrollo
+|-- requirements-dev.txt     # Dependencias para lint y tests
 |-- requirements.txt         # Dependencias Python para scripts locales
 `-- README.md
 ```
@@ -256,6 +258,21 @@ pip install -r requirements.txt
 ```
 
 Airflow corre en Docker, por lo que no es necesario instalar Airflow con `pip`.
+
+## Comandos Rapidos
+
+Si tienes `make` instalado, puedes ejecutar los flujos principales desde la raiz del repositorio:
+
+| Comando | Descripcion |
+| --- | --- |
+| `make install-dev` | Instala dependencias de runtime, lint y tests. |
+| `make ci` | Ejecuta `ruff` y `pytest`, igual que GitHub Actions. |
+| `make airflow-up` | Levanta Airflow usando `airflow/docker-compose.yml` y `.env`. |
+| `make airflow-down` | Detiene los servicios locales de Airflow. |
+| `make cmf-test` | Prueba la conexion contra la API CMF con tu `.env`. |
+| `make tf-init` | Inicializa Terraform en `terraform/`. |
+| `make tf-plan` | Ejecuta `terraform plan` usando `GCP_PROJECT_ID`. |
+| `make tf-apply` | Ejecuta `terraform apply` usando `GCP_PROJECT_ID`. |
 
 ## Infraestructura En GCP
 
