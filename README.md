@@ -201,6 +201,8 @@ La tabla recomendada para conectar a Looker Studio es:
 |   |-- extractors/          # Cliente para API CMF
 |   `-- loaders/             # Carga de JSON hacia GCS
 |-- terraform/               # Infraestructura GCP como codigo
+|-- CONTRIBUTING.md          # Guia breve para contribuir
+|-- LICENSE                  # Licencia MIT
 |-- Makefile                 # Comandos frecuentes de desarrollo
 |-- requirements-dev.txt     # Dependencias para lint y tests
 |-- requirements.txt         # Dependencias Python para scripts locales
@@ -348,3 +350,7 @@ No subir al repositorio:
 - datos locales bajo `data/raw` o `data/processed`
 
 Estos archivos estan cubiertos por `.gitignore`, pero conviene revisarlos antes de cada commit.
+
+## Licencia
+
+Este proyecto esta disponible bajo licencia MIT. Ver `LICENSE` para mas detalles.
